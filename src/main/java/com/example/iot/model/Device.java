@@ -55,4 +55,8 @@ public class Device {
     public void setLastActive(LocalDateTime lastActive) {
         this.lastActive = lastActive;
     }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+    }
 }

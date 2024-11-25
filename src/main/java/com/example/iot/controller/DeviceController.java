@@ -1,10 +1,14 @@
 package com.example.iot.controller;
 
+import com.example.iot.dto.DeviceRegistrationDTO;
+import com.example.iot.dto.DeviceUpdateDTO;
 import com.example.iot.model.Device;
 import com.example.iot.model.DeviceData;
 import com.example.iot.repository.DeviceDataRepository;
-import com.example.iot.repository.DeviceRepository;
+import com.example.iot.service.DeviceService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -14,29 +18,30 @@ import java.util.List;
 @RequestMapping("/api/devices")
 public class DeviceController {
 
+    private final DeviceService deviceService;
     private final DeviceDataRepository deviceDataRepository;
-    private DeviceRepository deviceRepository;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
-    public DeviceController(DeviceRepository deviceRepository, DeviceDataRepository deviceDataRepository) {
-        this.deviceRepository = deviceRepository;
+    public DeviceController(DeviceService deviceService, DeviceDataRepository deviceDataRepository, KafkaTemplate<String, String> kafkaTemplate) {
+        this.deviceService = deviceService;
         this.deviceDataRepository = deviceDataRepository;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerDevice(@RequestBody Device device) {
-        if (deviceRepository.findByDeviceId(device.getDeviceId()).isPresent()) {
-            return ResponseEntity.badRequest().body("Device with this ID already exists");
+    public ResponseEntity<String> registerDevice(@Valid @RequestBody DeviceRegistrationDTO dto) {
+        try {
+            String response = deviceService.registerDevice(dto);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-
-        device.setLastActive(LocalDateTime.now());
-        deviceRepository.save(device);
-        return ResponseEntity.ok("Device registered successfully");
     }
 
     //TODO try withouy RESPONSEENTITY<blablalba>
     @GetMapping
     public ResponseEntity<List<Device>> getAllDevices() {
-        return ResponseEntity.ok(deviceRepository.findAll());
+        return ResponseEntity.ok(deviceService.getAllDevices());
     }
 
     @GetMapping("/{deviceId}/data")
@@ -48,27 +53,47 @@ public class DeviceController {
         return ResponseEntity.ok(data);
     }
 
+    @PostMapping("/{deviceId}/data")
+    public ResponseEntity<String> sendDataToKafka(
+            @PathVariable String deviceId,
+            @RequestBody DeviceData deviceData) {
+        // Check if the device exists
+        if (!deviceService.findDeviceById(deviceId).isPresent()) {
+            return ResponseEntity.badRequest().body("Device with this ID does not exist.");
+        }
+
+        // Set the device ID in the data object (optional if not part of the payload)
+        deviceData.setDeviceId(deviceId);
+        deviceData.setTimestamp(LocalDateTime.now());
+
+        // Send data to Kafka
+        kafkaTemplate.send("device_data", deviceId, deviceData.toString());
+
+        // Optionally save the data in your database for auditing //TODO auditing?
+        deviceDataRepository.save(deviceData);
+
+        return ResponseEntity.ok("Data sent to Kafka and stored successfully.");
+    }
+
 
     @PutMapping("/{deviceId}")
-    public ResponseEntity<String> updateDevice(@PathVariable String deviceId, @RequestBody Device updatedDevice) {
-        return deviceRepository.findByDeviceId(deviceId)
-                .map(device -> {
-                    device.setName(updatedDevice.getName());
-                    device.setStatus(updatedDevice.getStatus());
-                    device.setLastActive(LocalDateTime.now());
-                    deviceRepository.save(device);
-                    return ResponseEntity.ok("Device updated successfully");
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<String> updateDevice(@PathVariable String deviceId, @Valid @RequestBody DeviceUpdateDTO dto) {
+        try {
+            String response = deviceService.updateDevice(deviceId, dto);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{deviceId}")
     public ResponseEntity<String> deleteDevice(@PathVariable String deviceId) {
-        if (deviceRepository.findByDeviceId(deviceId).isPresent()) {
-            deviceRepository.deleteByDeviceId(deviceId);
-            return ResponseEntity.ok("Device deleted successfully");
+        try {
+            String response = deviceService.deleteDevice(deviceId);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
     }
 
 }
