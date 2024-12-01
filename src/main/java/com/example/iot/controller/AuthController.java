@@ -3,10 +3,7 @@ package com.example.iot.controller;
 
 import com.example.iot.model.User;
 import com.example.iot.repository.UserRepository;
-import com.example.iot.service.CustomerUserDetailsService;
-import com.example.iot.service.JwtService;
 import com.example.iot.util.JwtUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -43,6 +40,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestParam String username, @RequestParam String password) {
+        //  TODO check user with same username exists ? !!!
         // Logic to save the user with encoded password
         userRepository.save(new User(username, passwordEncoder.encode(password),"role")); //TODO role assigning
         return ResponseEntity.ok("User registered successfully");

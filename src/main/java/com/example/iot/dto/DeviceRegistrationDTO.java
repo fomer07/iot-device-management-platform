@@ -15,6 +15,7 @@ public class DeviceRegistrationDTO {
 
     private String status;
 
+
     // Getters and Setters
 
     public @NotBlank(message = "Device ID cannot be blank") @Size(max = 50, message = "Device ID cannot exceed 50 characters") String getDeviceId() {

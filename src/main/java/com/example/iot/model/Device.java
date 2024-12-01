@@ -1,6 +1,8 @@
 package com.example.iot.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 
@@ -23,6 +25,7 @@ public class Device {
     private String name;
     private String status;
     private LocalDateTime lastActive;
+
 
     public Long getId() {
         return id;

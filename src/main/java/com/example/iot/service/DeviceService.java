@@ -1,7 +1,9 @@
 package com.example.iot.service;
 
+import com.example.iot.dto.DeviceResponse;
 import com.example.iot.dto.DeviceRegistrationDTO;
 import com.example.iot.dto.DeviceUpdateDTO;
+import com.example.iot.mapper.DeviceMapper;
 import com.example.iot.model.Device;
 import com.example.iot.repository.DeviceRepository;
 import org.springframework.stereotype.Service;
@@ -9,18 +11,32 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class DeviceService {
 
     private final DeviceRepository deviceRepository;
+    private final DeviceMapper deviceMapper;
 
-    public DeviceService(DeviceRepository deviceRepository) {
+    public DeviceService(DeviceRepository deviceRepository,
+                         DeviceMapper deviceMapper) {
         this.deviceRepository = deviceRepository;
+        this.deviceMapper = deviceMapper;
     }
 
-    public List<Device> getAllDevices() {
-        return deviceRepository.findAll();
+    public DeviceResponse getDeviceById(String deviceId) {
+        Device device = deviceRepository.findByDeviceId(deviceId)
+                .orElseThrow(() -> new IllegalArgumentException("Device not found."));
+        return deviceMapper.toResponse(device);
+    }
+
+
+    public List<DeviceResponse> getAllDevices() {
+        List<Device> devices = deviceRepository.findAll();
+        return devices.stream()
+                .map(deviceMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     public Optional<Device> findDeviceById(String deviceId) {
@@ -32,12 +48,9 @@ public class DeviceService {
             throw new IllegalArgumentException("Device with this ID already exists");
         }
 
-        Device device = new Device();
-        device.setDeviceId(dto.getDeviceId());
-        device.setName(dto.getName());
-        device.setStatus(dto.getStatus());
-        device.setLastActive(LocalDateTime.now());
+        Device device = deviceMapper.toEntity(dto);
         deviceRepository.save(device);
+
         return "Device registered successfully";
     }
 
