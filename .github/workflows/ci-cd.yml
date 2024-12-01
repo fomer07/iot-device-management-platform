@@ -1,0 +1,57 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      -main # Trigger on main branch pushes
+  pull-request:
+    branches:
+      -main
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout code
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+
+    # Set up JDK
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+
+    # Cache dependencies
+    - name: Cache maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+          
+
+    # Build and Test
+    - name: Build and test with Maven
+      run: mvn clean install
+
+
+  deploy:
+    needs: build # Deploy only after build passes
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout code
+    - name: Deploy to Render
+      env:
+        RENDER_API_TOKEN: ${{ secrets.RENDER_API_TOKEN }}
+      run: |
+        # Example for deploying with Render's CLI
+        curl -fsSL https://cli.render.com/install.sh | bash
+        render deploy --service your-service-name
