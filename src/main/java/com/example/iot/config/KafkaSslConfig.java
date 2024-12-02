@@ -19,13 +19,13 @@ public class KafkaSslConfig {
         // Decode and write the truststore file
         if (trustStoreBase64 != null) {
             byte[] decodedTrustStore = Base64.getDecoder().decode(trustStoreBase64);
-            Files.write(Paths.get("/tmp/truststore.jks"), decodedTrustStore);
+            Files.write(Paths.get("/tmp/client.truststore.jks"), decodedTrustStore);
         }
 
         // Decode and write the keystore file
         if (keyStoreBase64 != null) {
             byte[] decodedKeyStore = Base64.getDecoder().decode(keyStoreBase64);
-            Files.write(Paths.get("/tmp/keystore.p12"), decodedKeyStore);
+            Files.write(Paths.get("/tmp/client.keystore.p12"), decodedKeyStore);
         }
 
         System.out.println("Kafka SSL key files have been set up.");
