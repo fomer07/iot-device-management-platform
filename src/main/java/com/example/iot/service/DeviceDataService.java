@@ -44,7 +44,8 @@ public class DeviceDataService {
 
         DeviceData deviceData = deviceDataMapper.toDeviceData(deviceDataRequestDTO);
 
-        kafkaTemplate.send("device_data", deviceId, deviceData.toString());
+        //kafkaTemplate.send("device_data", deviceId, deviceData.toString());
+        kafkaTemplate.send("device_data",deviceData.getData());
 
         // Save to database
         deviceDataRepository.save(deviceData);
