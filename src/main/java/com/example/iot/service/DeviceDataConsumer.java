@@ -19,7 +19,7 @@ public class DeviceDataConsumer {
         this.deviceDataRepository = deviceDataRepository;
     }
 
-    @KafkaListener(topics = "device_data", groupId = "iot-group")
+    @KafkaListener(topics = "device_data", groupId = "kafka-319df863")
     public void consumeDeviceData(String message) {
         System.out.println("Received data: " + message);
 
