@@ -10,7 +10,7 @@ public class LoggingFilterConfig {
 
 
     @Bean
-    public FilterRegistrationBean<MDCFilter> loggingFilter() {
+    public FilterRegistrationBean<MDCFilter> mdcLoggingFilter() {
 
         FilterRegistrationBean<MDCFilter> filterRegistrationBean = new FilterRegistrationBean<>();
         filterRegistrationBean.setFilter(new MDCFilter());
