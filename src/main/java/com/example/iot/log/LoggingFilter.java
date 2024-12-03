@@ -19,7 +19,7 @@ public class LoggingFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        logger.info("Incoming request: {} {}", request.getMethod(), request.getRequestURI());
+        logger.info("MY INCOMING REQUEST FILTER FUCK request: {} {}", request.getMethod(), request.getRequestURI());
         filterChain.doFilter(request, response);
     }
 }
