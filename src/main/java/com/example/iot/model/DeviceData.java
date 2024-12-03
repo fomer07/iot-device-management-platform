@@ -47,7 +47,7 @@ public class DeviceData {
     }
     @Override
     public String toString() {
-        return "DeviceData{" +
+        return "DeviceData {" +
                 "deviceId='" + deviceId + '\'' +
                 ", data=" + data +
                 ", timestamp=" + timestamp +
