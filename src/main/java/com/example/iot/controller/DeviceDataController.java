@@ -2,7 +2,6 @@ package com.example.iot.controller;
 
 import com.example.iot.dto.DeviceDataRequestDTO;
 import com.example.iot.dto.DeviceDataResponse;
-import com.example.iot.model.DeviceData;
 import com.example.iot.service.DeviceDataService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +31,7 @@ public class DeviceDataController {
     }
 
     //TODO what is use case of @Valid ?
+    //TODO UZUN DATA MESAJINDA KAFKA YA GÖNDERİYOR, SQL DE PATLIYOR UZUN DİYOR, AMA 403 ATIYOR ???
     @PostMapping
     public ResponseEntity<String> sendDataToKafka(
             @PathVariable("deviceId") String deviceId,
